@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Orbitron } from 'next/font/google'
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers"
+import { TelemetryProvider } from "@/components/TelemetryProvider"
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' })
@@ -25,7 +26,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <TelemetryProvider>
+            {children}
+          </TelemetryProvider>
         </ThemeProvider>
       </body>
     </html>

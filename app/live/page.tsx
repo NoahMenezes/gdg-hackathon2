@@ -14,7 +14,9 @@ import {
   Wifi,
   WifiOff,
   Radar,
+  Camera,
 } from "lucide-react";
+import { useTelemetry } from "@/components/TelemetryProvider";
 
 interface PlayerData {
   id: number;
@@ -34,50 +36,6 @@ interface FrameStats {
   // optional backend values
   team1_count?: number;
   team2_count?: number;
-}
-
-// ─────────────────────────────────────────────────────────────
-// Frame Stream Hook
-// ─────────────────────────────────────────────────────────────
-
-function useFrameStream(active: boolean) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [ready, setReady] = useState(false);
-  const [fps, setFps] = useState(0);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (active) {
-      setConnected(true);
-      setTimeout(() => {
-        setReady(true);
-        if (videoRef.current) {
-          videoRef.current.play().catch(console.error);
-        }
-      }, 1500); // Simulate booting vision OS
-      interval = setInterval(() => setFps(Math.floor(58 + Math.random() * 4)), 1000);
-    } else {
-      setConnected(false);
-      setReady(false);
-      setFps(0);
-      if (videoRef.current) {
-        videoRef.current.pause();
-        videoRef.current.currentTime = 0;
-      }
-    }
-    return () => clearInterval(interval);
-  }, [active]);
-
-  return {
-    videoRef,
-    stats: { players_detected: 22, frame_id: 1205, ball_detected: true } as FrameStats,
-    connected,
-    ready,
-    error: null,
-    fps,
-    status: "PROCESSING STREAM",
-  };
 }
 
 // ─── Tactical Minimap ──────────────────────────────────────────
@@ -146,15 +104,22 @@ function TacticalMinimap({ detections }: { detections: { id: number; bbox: numbe
 // ─────────────────────────────────────────────────────────────
 
 export default function LivePage() {
-  const [sessionActive, setSessionActive] = useState(false);
+  const { 
+    isProcessing, 
+    connected, 
+    latestFrame, 
+    stats, 
+    status, 
+    startSession, 
+    stopSession 
+  } = useTelemetry();
 
-  const { videoRef, stats, connected, ready, error, fps, status } =
-    useFrameStream(sessionActive);
+  const fps = 30;
 
   const metrics = [
     {
       label: "Tracking Confidence",
-      val: ready ? "98.4" : "—",
+      val: isProcessing ? "98.4" : "—",
       unit: "%",
       icon: Activity,
       color: "#c8e86e",
@@ -168,7 +133,7 @@ export default function LivePage() {
     },
     {
       label: "Latency",
-      val: "12",
+      val: isProcessing ? "12" : "—",
       unit: "ms",
       icon: TrendingUp,
       color: "#a78bfa",
@@ -232,19 +197,19 @@ export default function LivePage() {
 
           {/* START BUTTON */}
           <button
-            onClick={async () => {
-              if (!sessionActive) {
-                // Video will automatically play through the hook
+            onClick={() => {
+              if (!isProcessing) {
+                startSession();
+              } else {
+                stopSession();
               }
-
-              setSessionActive((v) => !v);
             }}
-            className={`px-8 py-4 rounded-none font-black uppercase tracking-[0.2em] text-xs transition-all duration-300 hover:scale-105 ${sessionActive
+            className={`px-8 py-4 rounded-none font-black uppercase tracking-[0.2em] text-xs transition-all duration-300 hover:scale-105 ${isProcessing
                 ? "bg-red-500/10 text-red-400"
                 : "bg-[#c8e86e] text-black shadow-none"
               }`}
           >
-            {sessionActive ? (
+            {isProcessing ? (
               <div className="flex items-center gap-2">
                 <Square className="w-4 h-4" />
                 Stop Session
@@ -257,23 +222,6 @@ export default function LivePage() {
             )}
           </button>
         </div>
-
-        {/* ERROR */}
-        {error && (
-          <div className="border-none bg-red-500/10 rounded-none p-5 flex gap-4">
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-1" />
-
-            <div className="space-y-2 text-sm">
-              <div className="font-bold text-red-400">Vision Engine Error</div>
-
-              <div className="text-gray-300">{error}</div>
-
-              <div className="text-xs text-gray-500 font-mono">
-                cd vision-engine && python server.py
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* MAIN GRID */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
@@ -319,7 +267,7 @@ export default function LivePage() {
               `}</style>
 
               {/* PLACEHOLDER */}
-              {!sessionActive && (
+              {!isProcessing && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-6">
                   <div className="relative">
                     <div className="absolute inset-0 bg-[#c8e86e]/20 blur-3xl rounded-none animate-pulse" />
@@ -341,33 +289,18 @@ export default function LivePage() {
                 </div>
               )}
 
-              {/* LOADING / ANALYSIS */}
-              {sessionActive && !ready && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-black/80 backdrop-blur-xl z-30">
-                  <div className="w-16 h-16 rounded-none border-2 border-[#c8e86e]/20 border-t-[#c8e86e] animate-spin" />
-                  <div className="text-center space-y-2">
-                    <div className="font-black tracking-[0.3em] text-[#c8e86e] text-sm animate-pulse">
-                      {status || "BOOTING VISION OS"}
-                    </div>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-mono">
-                      Neural Analysis In Progress
-                    </p>
-                  </div>
-                </div>
+              {/* FEED IMAGE */}
+              {isProcessing && latestFrame && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={`data:image/jpeg;base64,${latestFrame}`}
+                  alt="Vision Stream"
+                  className="w-full h-full object-contain"
+                />
               )}
 
-              <video
-                ref={videoRef}
-                src="/test.mp4"
-                loop
-                muted
-                playsInline
-                className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${ready ? "opacity-100" : "opacity-0"
-                  }`}
-              />
-
               {/* HUD */}
-              {ready && (
+              {isProcessing && (
                 <>
                   {/* TOP LEFT */}
                   <div className="absolute top-4 left-4 bg-black/70 border-none rounded-none px-4 py-3 backdrop-blur-md z-40">
@@ -433,7 +366,7 @@ export default function LivePage() {
                   },
                   {
                     label: "Inference",
-                    value: ready ? "STABLE" : "WAITING",
+                    value: isProcessing ? "STABLE" : "WAITING",
                   },
                   {
                     label: "Ball Detection",

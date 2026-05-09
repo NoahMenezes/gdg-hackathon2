@@ -29,11 +29,11 @@ export default function Navbar() {
         {/* Center: HUD Links */}
         <div className="hidden md:flex items-center gap-10">
           {[
-            { name: "Landing Page", path: "/" },
-            { name: "Tactical HUD", path: "/dashboard" },
+            { name: "Tactical Nexus", path: "/" },
             { name: "Live Tracking", path: "/live" },
-            { name: "Topological Analysis", path: "#" },
-            { name: "Neural Pipeline", path: "#" }
+            { name: "Topology Lab", path: "/dashboard" },
+            { name: "Neural Forecast", path: "#" },
+            { name: "System Core", path: "#" }
           ].map((link) => (
             <Link
               key={link.name}

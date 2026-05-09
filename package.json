@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev\" \"cd vision/visionplay-pipeline-main/src && source ../.venv/bin/activate && python server.py\"",
+    "dev": "concurrently \"next dev --turbopack\" \"cd vision/visionplay-pipeline/src && source ../.venv/bin/activate && python server.py\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
