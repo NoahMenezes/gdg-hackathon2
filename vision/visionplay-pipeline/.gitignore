@@ -1,0 +1,70 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+*.spec
+
+# ── Virtual environment ────────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+.env/
+
+# ── Environment variables ─────────────────────────────────────────────────────
+.env
+.env.*
+*.env
+
+# ── ML Models (large binary weights — download separately) ───────────────────
+# models/*.pt
+# models/*.onnx
+# models/*.engine
+# models/*.trt
+# models/*.bin
+# models/*.pb
+
+# ── Pipeline working directories (generated at runtime) ──────────────────────
+# extracted_frames/
+# processed_frames/
+
+# ── Output videos (generated at runtime) ─────────────────────────────────────
+# output_videos/*.mp4
+# output_videos/*.avi
+# output_videos/*.mov
+# output_videos/*.mkv
+
+# ── Input videos (large media — add your own locally) ────────────────────────
+# input_videos/*.mp4
+# input_videos/*.avi
+# input_videos/*.mov
+# input_videos/*.mkv
+
+# ── Temporary / live dashboard artifacts ─────────────────────────────────────
+output_videos/live_stats.json
+output_videos/live_view.jpg
+output_videos/dashboard.html
+*.tmp
+*.tmp.jpg
+test_codec.mp4
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── OS & editor junk ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/

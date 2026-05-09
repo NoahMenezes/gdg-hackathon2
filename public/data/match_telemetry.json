@@ -3,7 +3,7 @@
         "total_persons": 12920,
         "team1_total": 6166,
         "team2_total": 4653,
-        "avg_inference_time": 0.1602260087331136,
+        "avg_inference_time": 0.15945062096913656,
         "possession_team1": 535,
         "possession_team2": 215,
         "total_frames": 750

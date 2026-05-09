@@ -40,11 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 # Video & Media
-public/videos/
-vision/input_videos/
-vision/output_videos/
-vision/extracted_frames/
-vision/processed_frames/
 
 # AI Models (Very Large)
 vision/models/*.pt
